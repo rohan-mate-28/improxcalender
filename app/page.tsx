@@ -1,5 +1,2 @@
-import { redirect } from "next/navigation";
-
-export default function Home() {
-  redirect("/calendar/improx-group");
-}
+import CalendarApp from "@/components/CalendarApp";
+export default function Page(){return <CalendarApp calendarId="improx-group"/>}

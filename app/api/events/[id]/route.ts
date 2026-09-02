@@ -1,54 +1,6 @@
-import { NextResponse } from "next/server";
-import { isEditPasswordValid } from "@/lib/auth";
-import { updateEvents } from "@/lib/json-storage";
-
-async function verify(request: Request) {
-  const body = await request.clone().json().catch(() => ({}));
-  return isEditPasswordValid(String(body.password ?? ""));
-}
-
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!verify(request)) return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
-  const { id } = await params;
-  const body = await request.json();
-
-  let updatedEvent: any = null;
-  await updateEvents((events) => events.map((event) => {
-    if (event.id !== id) return event;
-    updatedEvent = {
-      ...event,
-      title: String(body.title ?? event.title).trim(),
-      date: String(body.date ?? event.date),
-      startTime: String(body.startTime ?? event.startTime),
-      endTime: String(body.endTime ?? event.endTime),
-      description: String(body.description ?? ""),
-      location: String(body.location ?? ""),
-      category: String(body.category ?? "General"),
-      reminder: String(body.reminder ?? ""),
-      notes: String(body.notes ?? ""),
-      updatedAt: new Date().toISOString()
-    };
-    return updatedEvent;
-  }));
-
-  if (!updatedEvent) return NextResponse.json({ error: "Event not found." }, { status: 404 });
-  return NextResponse.json(updatedEvent);
-}
-
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!verify(request)) return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
-  const { id } = await params;
-  let removed = false;
-  await updateEvents((events) => events.filter((event) => {
-    if (event.id === id) { removed = true; return false; }
-    return true;
-  }));
-  if (!removed) return NextResponse.json({ error: "Event not found." }, { status: 404 });
-  return NextResponse.json({ success: true });
-}
+import {NextResponse} from "next/server";
+import {readJson,writeJson} from "@/lib/storage";
+import type {CalendarEvent} from "@/lib/types";
+import {verifyEditPassword} from "@/lib/auth";
+export async function PUT(request:Request,{params}:{params:Promise<{id:string}>}){try{if(!(await verifyEditPassword(request)))return NextResponse.json({error:"Invalid password."},{status:401});const {id}=await params;const b=await request.json();const events=await readJson<CalendarEvent[]>("events",[]);const i=events.findIndex(e=>e.id===id);if(i<0)return NextResponse.json({error:"Event not found."},{status:404});const old=events[i];events[i]={...old,title:b.title!==undefined?String(b.title).trim():old.title,description:b.description!==undefined?String(b.description).trim():old.description,date:b.date!==undefined?String(b.date):old.date,startTime:b.startTime!==undefined?String(b.startTime):old.startTime,endTime:b.endTime!==undefined?String(b.endTime):old.endTime,location:b.location!==undefined?String(b.location).trim():old.location,color:b.color!==undefined?b.color:old.color,updatedAt:new Date().toISOString()};await writeJson("events",events);return NextResponse.json(events[i])}catch(e){console.error(e);return NextResponse.json({error:"Unable to update event."},{status:500})}}
+export async function DELETE(request:Request,{params}:{params:Promise<{id:string}>}){try{if(!(await verifyEditPassword(request)))return NextResponse.json({error:"Invalid password."},{status:401});const {id}=await params;const events=await readJson<CalendarEvent[]>("events",[]);const next=events.filter(e=>e.id!==id);if(next.length===events.length)return NextResponse.json({error:"Event not found."},{status:404});await writeJson("events",next);return NextResponse.json({success:true})}catch(e){console.error(e);return NextResponse.json({error:"Unable to delete event."},{status:500})}}

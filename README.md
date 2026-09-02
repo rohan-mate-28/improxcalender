@@ -1,36 +1,16 @@
-# Improx Luxury Calendar
+# Improx Luxury Calendar — Netlify Edition
 
-Premium Next.js calendar using local JSON files instead of a database.
+This version fixes the Netlify 404/500 and `Unexpected end of JSON input` issues.
 
-## Run
+Production persistence uses **Netlify Blobs** and stores the events/calendars as JSON values. Local development uses `data/events.json` and `data/calendars.json`.
 
-1. Copy `.env.example` to `.env.local`.
-2. Keep `CALENDAR_EDIT_PASSWORD=improx` for the requested password.
-3. Install dependencies:
+Set `CALENDAR_EDIT_PASSWORD=improx` in Netlify environment variables. Edit/delete are checked server-side.
 
-```bash
-npm install
-```
+Run locally:
+1. npm install
+2. copy `.env.example` to `.env.local`
+3. npm run dev
 
-4. Start development:
+Deploy normally to Netlify. If prompted, enable Netlify Blobs for the site.
 
-```bash
-npm run dev
-```
-
-5. Open `http://localhost:3000`
-
-The default calendar is `/calendar/improx-group`.
-
-## Storage
-
-Calendar data is stored in:
-
-- `data/calendars.json`
-- `data/events.json`
-
-Create, edit, and delete operations update `events.json` on the server.
-
-## Important
-
-This JSON-file approach requires a deployment environment with persistent writable filesystem storage. It is intended for internal/small deployments; high-concurrency production collaboration should eventually move to a database.
+Important: Netlify's deployed function filesystem is not a persistent repository file. The production JSON is therefore stored in Netlify Blobs rather than attempting to rewrite `data/events.json`.

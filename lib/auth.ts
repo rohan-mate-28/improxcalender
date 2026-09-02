@@ -1,6 +1,1 @@
-import "server-only";
-
-export function isEditPasswordValid(password: string) {
-  const expected = process.env.CALENDAR_EDIT_PASSWORD || "improx";
-  return password === expected;
-}
+export async function verifyEditPassword(request:Request):Promise<boolean>{const expected=process.env.CALENDAR_EDIT_PASSWORD||"improx";try{const body=await request.clone().json();return typeof body?.password==="string"&&body.password===expected}catch{return false}}

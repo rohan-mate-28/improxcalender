@@ -1,0 +1,2 @@
+export type Calendar={id:string;name:string;description?:string};
+export type CalendarEvent={id:string;calendarId:string;title:string;description?:string;date:string;startTime?:string;endTime?:string;location?:string;color?:string;createdAt:string;updatedAt:string};

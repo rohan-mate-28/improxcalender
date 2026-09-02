@@ -1,38 +1,5 @@
-import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
-import { readEvents, updateEvents } from "@/lib/json-storage";
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const calendarId = searchParams.get("calendarId");
-  const events = await readEvents();
-  return NextResponse.json(calendarId ? events.filter((e) => e.calendarId === calendarId) : events);
-}
-
-export async function POST(request: Request) {
-  const body = await request.json();
-  const required = ["calendarId", "title", "date", "startTime", "endTime"];
-  if (required.some((key) => !String(body[key] ?? "").trim())) {
-    return NextResponse.json({ error: "Required event fields are missing." }, { status: 400 });
-  }
-
-  const now = new Date().toISOString();
-  const event = {
-    id: `event-${randomUUID()}`,
-    calendarId: String(body.calendarId),
-    title: String(body.title).trim(),
-    date: String(body.date),
-    startTime: String(body.startTime),
-    endTime: String(body.endTime),
-    description: String(body.description ?? ""),
-    location: String(body.location ?? ""),
-    category: String(body.category ?? "General"),
-    reminder: String(body.reminder ?? ""),
-    notes: String(body.notes ?? ""),
-    createdAt: now,
-    updatedAt: now
-  };
-
-  await updateEvents((events) => [...events, event]);
-  return NextResponse.json(event, { status: 201 });
-}
+import {NextResponse} from "next/server";
+import {readJson,writeJson} from "@/lib/storage";
+import type {CalendarEvent} from "@/lib/types";
+export async function GET(request:Request){try{const id=new URL(request.url).searchParams.get("calendarId")||"improx-group";const events=await readJson<CalendarEvent[]>("events",[]);return NextResponse.json(events.filter(e=>e.calendarId===id))}catch(e){console.error(e);return NextResponse.json({error:"Unable to load events."},{status:500})}}
+export async function POST(request:Request){try{const b=await request.json();if(!b?.title||!b?.date||!b?.calendarId)return NextResponse.json({error:"Title, date and calendar are required."},{status:400});const events=await readJson<CalendarEvent[]>("events",[]);const now=new Date().toISOString();const event:CalendarEvent={id:crypto.randomUUID(),calendarId:String(b.calendarId),title:String(b.title).trim(),description:String(b.description||"").trim(),date:String(b.date),startTime:String(b.startTime||""),endTime:String(b.endTime||""),location:String(b.location||"").trim(),color:b.color||"lavender",createdAt:now,updatedAt:now};events.push(event);await writeJson("events",events);return NextResponse.json(event,{status:201})}catch(e){console.error(e);return NextResponse.json({error:"Unable to create event."},{status:500})}}
