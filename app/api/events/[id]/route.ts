@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+export const dynamic = 'force-dynamic';
 import {readJson,writeJson} from "@/lib/storage";
 import type {CalendarEvent} from "@/lib/types";
 import {verifyEditPassword} from "@/lib/auth";

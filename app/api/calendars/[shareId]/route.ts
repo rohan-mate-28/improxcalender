@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { readCalendars, readEvents } from "@/lib/json-storage";
 
 export async function GET(

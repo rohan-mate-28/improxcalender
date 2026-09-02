@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+export const dynamic = 'force-dynamic';
 import {readJson,writeJson} from "@/lib/storage";
 import type {CalendarEvent} from "@/lib/types";
 export async function GET(request:Request){try{const id=new URL(request.url).searchParams.get("calendarId")||"improx-group";const events=await readJson<CalendarEvent[]>("events",[]);return NextResponse.json(events.filter(e=>e.calendarId===id))}catch(e){console.error(e);return NextResponse.json({error:"Unable to load events."},{status:500})}}
